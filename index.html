@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halloween Celebration</title>
+    <style>
+        body {
+            background-color: #0b0b0b;
+            color: #ffffff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .card {
+            text-align: center;
+            padding: 40px 30px;
+            border-radius: 16px;
+            background: #161616;
+            border: 1px solid #ff6600;
+            box-shadow: 0 0 30px rgba(255, 102, 0, 0.2);
+            max-width: 400px;
+            width: 90%;
+        }
+        .icon { font-size: 50px; margin-bottom: 10px; }
+        h2 { font-size: 24px; margin: 10px 0 20px 0; line-height: 1.4; }
+        .btn-group { display: flex; justify-content: center; gap: 15px; margin-top: 10px; }
+        button {
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            border: none;
+            transition: 0.2s;
+        }
+        .btn-yes { background-color: #ff6600; color: white; }
+        .btn-yes:hover { background-color: #e65c00; transform: scale(1.05); }
+        .btn-no { background-color: #333; color: #aaa; }
+        
+        /* MÀN HÌNH JUMPSCARE CHỚP ĐỎ ĐEN LIÊN TỤC */
+        #jumpscare {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+            animation: flash 0.1s infinite;
+        }
+        @keyframes flash {
+            0% { background-color: #000000; }
+            50% { background-color: #ff0000; }
+            100% { background-color: #000000; }
+        }
+        
+        /* Chữ hù dọa phóng to chớp giật */
+        .scary-monster {
+            font-size: 180px;
+            animation: shake 0.05s infinite;
+            user-select: none;
+        }
+        @keyframes shake {
+            0% { transform: translate(5px, 5px) scale(1); }
+            50% { transform: translate(-5px, -5px) scale(1.1); }
+            100% { transform: translate(5px, -5px) scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="quiz-card">
+        <div class="icon" id="quiz-icon">🎃</div>
+        <h2 id="quiz-text">Bạn có muốn ăn mừng lễ Halloween cùng với tôi không?</h2>
+        <div class="btn-group">
+            <button class="btn-yes" id="btn-next" onclick="nextStep()">Có chứ</button>
+            <button class="btn-no" onclick="triggerScare()">Không</button>
+        </div>
+    </div>
+
+    <!-- Vùng hù dọa bằng mã ký tự hệ thống -->
+    <div id="jumpscare">
+        <div class="scary-monster">👹</div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+
+        function nextStep() {
+            currentStep++;
+            if (currentStep === 2) {
+                document.getElementById('quiz-icon').innerText = "👻";
+                document.getElementById('quiz-text').innerText = "Bạn có chắc chắn là bạn không sợ ma quỷ chứ?";
+                document.getElementById('btn-next').innerText = "Tôi không sợ!";
+            } else if (currentStep === 3) {
+                document.getElementById('quiz-icon').innerText = "🎁";
+                document.getElementById('quiz-text').innerText = "Tuyệt vời! Bấm vào đây để nhận món quà Halloween bí mật!";
+                document.getElementById('btn-next').innerText = "Mở Quà Ngay";
+                document.getElementById('btn-next').setAttribute('onclick', 'triggerScare()');
+            }
+        }
+
+        function triggerScare() {
+            // 1. Hiện màn hình hù dọa chớp giật đỏ đen lập tức
+            document.getElementById('jumpscare').style.display = 'flex';
+            
+            // 2. Kích hoạt tiếng hét rè tần số cao cực lớn
+            try {
+                var context = new (window.AudioContext || window.webkitAudioContext)();
+                var osc = context.createOscillator();
+                var gain = context.createGain();
+                
+                osc.type = "sawtooth"; 
+                osc.frequency.setValueAtTime(250, context.currentTime);
+                osc.frequency.linearRampToValueAtTime(1000, context.currentTime + 0.4); 
+                
+                gain.gain.setValueAtTime(1, context.currentTime);
+                osc.connect(gain);
+                gain.connect(context.destination);
+                osc.start();
+            } catch(e) { console.log(e); }
+
+            // 3. Giữ hiệu ứng trong 3.5 giây rồi tự reset trò chơi về ban đầu
+            setTimeout(function() {
+                document.getElementById('jumpscare').style.display = 'none';
+                if(osc) osc.stop();
+                
+                currentStep = 1;
+                document.getElementById('quiz-icon').innerText = "🎃";
+                document.getElementById('quiz-text').innerText = "Bạn có muốn ăn mừng lễ Halloween cùng với tôi không?";
+                document.getElementById('btn-next').innerText = "Có chứ";
+                document.getElementById('btn-next').setAttribute('onclick', 'nextStep()');
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
